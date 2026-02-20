@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min professionelle portefølje - Alexander Kiil</title>
+    <!-- Google Fonts for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for the map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg-color: #0a192f;
+            --card-bg: #112240;
+            --text-main: #e6f1ff;
+            --text-dim: #8892b0;
+            --accent-ocean: #00d2ff;
+            --accent-grass: #4caf50;
+            --accent-gold: #ffc107;
+            --font-main: 'Inter', sans-serif;
+            --font-header: 'Poppins', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- Header/Nav --- */
+        header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 25, 47, 0.5); /* Semi-transparent */
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: var(--font-header);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent-ocean);
+        }
+
+        nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-grass);
+        }
+
+        /* --- Hero Section with Map Background --- */
+        #hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #hero-map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to right,
+                rgba(10, 25, 47, 0.95) 0%,
+                rgba(10, 25, 47, 0.8) 50%,
+                rgba(10, 25, 47, 0.4) 100%
+            );
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            max-width: 700px;
+        }
+
+        .hero-tag {
+            color: var(--accent-ocean);
+            font-family: monospace;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        h1 {
+            font-family: var(--font-header);
+            font-size: clamp(40px, 8vw, 80px);
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            color: var(--accent-grass);
+        }
+
+        .hero-desc {
+            max-width: 500px;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* --- Section Styling --- */
+        section {
+            padding: 100px 0;
+        }
+
+        h2 {
+            font-family: var(--font-header);
+            font-size: 2rem;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::after {
+            content: "";
+            height: 1px;
+            width: 300px;
+            background: var(--card-bg);
+            margin-left: 20px;
+        }
+
+        /* --- Experience Cards --- */
+        .exp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            transition: transform 0.3s;
+            border-bottom: 4px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card.ocean { border-color: var(--accent-ocean); }
+        .card.grass { border-color: var(--accent-grass); }
+        .card.gold { border-color: var(--accent-gold); }
+
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .card .role {
+            color: var(--accent-ocean);
+            font-family: monospace;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .card.grass .role { color: var(--accent-grass); }
+        .card.gold .role { color: var(--accent-gold); }
+
+        .card ul {
+            list-style: none;
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .card li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .card li::before {
+            content: "▹";
+            color: var(--accent-ocean);
+            margin-right: 10px;
+        }
+
+        .card.grass li::before { color: var(--accent-grass); }
+        .card.gold li::before { color: var(--accent-gold); }
+
+        /* --- Skills Section --- */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .skill-badge {
+            background: rgba(136, 146, 176, 0.1);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            transition: 0.3s;
+        }
+
+        .skill-badge:hover {
+            color: var(--accent-ocean);
+            background: rgba(0, 210, 255, 0.1);
+        }
+
+        /* Map Utility Styles */
+        .leaflet-container {
+            background: var(--bg-color) !important;
+        }
+
+        /* Custom Dark Map Styling */
+        .leaflet-tile-pane {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        /* --- Contact --- */
+        #contact {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #contact p {
+            color: var(--text-dim);
+            margin-bottom: 30px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
+        /* --- Animations --- */
+        [data-reveal] {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        [data-reveal].visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 50px; }
+            h2::after { width: 100px; }
+            nav { display: none; } /* Simplified for mobile */
+            #hero::before {
+                background: rgba(10, 25, 47, 0.85);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container" style="display:flex; justify-content:space-between; width:100%;">
+            <div class="logo">ALEXANDER.KIIL</div>
+            <nav>
+                <a href="#hero">Start</a>
+                <a href="#experience">Erfaring</a>
+                <a href="#achievements">Resultater</a>
+                <a href="#skills">Færdigheder</a>
+                <a href="#contact">Kontakt</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section with Map Background -->
+    <section id="hero">
+        <div id="hero-map"></div>
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-tag">Hej, jeg hedder</span>
+                <h1>Alexander Kiil. <br><span class="highlight">Flittig, alsidig & klar til at lære.</span></h1>
+                <p class="hero-desc">
+                    Jeg er en 13-årig dreng fra Humlebæk med en stærk arbejdsmoral og erfaring inden for både undervisning og manuelt arbejde. Jeg bor i Humlebæk og cykler gerne ud til opgaver inden for en radius af ca. 15 km.
+                </p>
+                <div>
+                    <a href="#experience" class="btn">Se mit arbejde</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Experience Section -->
+        <section id="experience" data-reveal>
+            <h2>Arbejdserfaring</h2>
+            <div class="exp-grid">
+                <!-- Windsurf Card -->
+                <div class="card ocean">
+                    <span class="role">Instruktør</span>
+                    <h3>Windsurfinstruktør</h3>
+                    <ul>
+                        <li>Klar kommunikation og tålmodighed med elever i alle aldre.</li>
+                        <li>Højt niveau af sikkerhedsbevidsthed og udstyrshåndtering.</li>
+                        <li>Lederskab i et udendørs miljø med højt tempo.</li>
+                    </ul>
+                </div>
+                <!-- Lawn Care Card -->
+                <div class="card grass">
+                    <span class="role">Service & manuelt arbejde</span>
+                    <h3>Havearbejde & vedligeholdelse</h3>
+                    <ul>
+                        <li>Punktlig og pålidelig service til faste kunder.</li>
+                        <li>Stor opmærksomhed på detaljer og professionelle resultater.</li>
+                        <li>Selvstændig medarbejder, der kan styre sin egen tidsplan.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section id="achievements" data-reveal>
+            <h2>Resultater</h2>
+            <div class="exp-grid">
+                <!-- Windsurfing Tournament -->
+                <div class="card gold">
+                    <span class="role">Sport</span>
+                    <h3>Vinder af klubmesterskab</h3>
+                    <ul>
+                        <li>1. plads i den regionale windsurfingklubs turnering.</li>
+                        <li>Anerkendt for avancerede tekniske færdigheder og løbsstrategi.</li>
+                        <li>Konstant præstation under pres i konkurrenceforhold.</li>
+                    </ul>
+                </div>
+                <!-- Academic achievement -->
+                <div class="card gold">
+                    <span class="role">Skole</span>
+                    <h3>Top akademisk præstation</h3>
+                    <ul>
+                        <li>Fremragende skolepræsentationer, bemærket for klarhed og selvtillid.</li>
+                        <li>Konsekvent høje karakterer i kernefagene.</li>
+                        <li>Stærke verbale kommunikationsevner og evne til at forklare komplekse ideer.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" data-reveal>
+            <h2>Mine færdigheder</h2>
+            <div class="skills-container">
+                <div class="skill-badge">Undervisning & instruktion</div>
+                <div class="skill-badge">Vedligeholdelse af udstyr</div>
+                <div class="skill-badge">Kundeservice</div>
+                <div class="skill-badge">Tidsstyring</div>
+                <div class="skill-badge">Problemløsning</div>
+                <div class="skill-badge">Sikkerhedsledelse</div>
+                <div class="skill-badge">Fysisk udholdenhed</div>
+                <div class="skill-badge">Hurtig til at lære</div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" data-reveal>
+            <h2>Kontakt mig</h2>
+            <p>
+                Jeg søger i øjeblikket nye muligheder for at arbejde, lære og bidrage. Uanset om det drejer sig om manuelt arbejde, juniorinstruktion eller hjælp til dit næste projekt, vil jeg meget gerne høre fra dig.
+            </p>
+            <a href="mailto:your.email@example.com" class="btn">Send en besked</a>
+        </section>
+    </div>
+
+    <footer>
+        Designet & bygget til fremtiden &copy; 2026
+    </footer>
+
+    <!-- Leaflet JS for the map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        /* --- JAVASCRIPT --- */
+        
+        // Scroll Reveal Animation
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-reveal]').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Initialize Map
+        function initMap() {
+            const humlebaek = [55.9625, 12.5414];
+            // Initialize map in the hero section
+            const map = L.map('hero-map', {
+                zoomControl: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                dragging: false,
+                touchZoom: false
+            }).setView(humlebaek, 11);
+            
+            window.map = map;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add 15km Radius Circle
+            L.circle(humlebaek, {
+                color: '#4caf50',
+                fillColor: '#4caf50',
+                fillOpacity: 0.1,
+                radius: 15000 // 15 km in meters
+            }).addTo(map);
+
+            // Add Marker for Home
+            const homeIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#00d2ff; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 10px rgba(0,210,255,0.5);'></div>",
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+            L.marker(humlebaek, {icon: homeIcon}).addTo(map);
+        }
+
+        // Wait for Leaflet to be ready
+        window.addEventListener('load', initMap);
+
+        // Simple Console Message for Employers
+        console.log("%cHej potentielle arbejdsgiver!", "color: #00d2ff; font-size: 20px; font-weight: bold;");
+        console.log("Dette site er bygget med HTML, CSS og ren JS.");
+    </script>
+</body>
+</html>
