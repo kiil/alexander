@@ -325,7 +325,7 @@
                 <span class="hero-tag">Hej, jeg hedder</span>
                 <h1>Alexander Kiil. <br><span class="highlight">Flittig, alsidig & klar til at lære.</span></h1>
                 <p class="hero-desc">
-                    Jeg er en 13-årig dreng fra Humlebæk med en stærk arbejdsmoral og erfaring inden for både undervisning og manuelt arbejde. Jeg bor i Humlebæk og cykler gerne ud til opgaver inden for en radius af ca. 10 km.
+                    Jeg er en <span id="alex-age">13</span>-årig dreng fra Humlebæk med en stærk arbejdsmoral og erfaring inden for både undervisning og manuelt arbejde. Jeg bor i Humlebæk og cykler gerne ud til opgaver inden for en radius af ca. 10 km.
                 </p>
                 <div>
                     <a href="#experience" class="btn">Se mit arbejde</a>
@@ -423,6 +423,21 @@
     <script>
         /* --- JAVASCRIPT --- */
         
+        // Dynamic Age Calculation
+        function updateAge() {
+            const birthDate = new Date(2012, 7, 25); // 25. august 2012 (Month is 0-indexed)
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            const ageElement = document.getElementById('alex-age');
+            if (ageElement) {
+                ageElement.textContent = age;
+            }
+        }
+
         // Scroll Reveal Animation
         const observerOptions = {
             threshold: 0.1
@@ -501,7 +516,10 @@
         }
 
         // Wait for Leaflet to be ready
-        window.addEventListener('load', initMap);
+        window.addEventListener('load', () => {
+            initMap();
+            updateAge();
+        });
 
         // Simple Console Message for Employers
         console.log("%cHej potentielle arbejdsgiver!", "color: #00d2ff; font-size: 20px; font-weight: bold;");
