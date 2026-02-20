@@ -293,7 +293,11 @@
             h2::after { width: 100px; }
             nav { display: none; } /* Simplified for mobile */
             #hero::before {
-                background: rgba(10, 25, 47, 0.85);
+                background: linear-gradient(
+                    to bottom,
+                    rgba(10, 25, 47, 0.7) 0%,
+                    rgba(10, 25, 47, 0.5) 100%
+                );
             }
         }
     </style>
